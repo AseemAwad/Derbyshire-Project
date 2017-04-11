@@ -1,0 +1,118 @@
+http://workshop.pgrouting.org/2.1.0-dev/en/index.html
+
+ipgrouting - install from synaptic
+sudo -u postgres psql -d dcc
+dcc=# CREATE EXTENSION postgis;
+dcc=# CREATE EXTENSION pgrouting;
+\dx+ pgrouting  #check installated
+
+install osm2pgrouting via git/make
+
+need to give user charles a password (charles)
+osm2pgrouting  -f ~/data/osm/dcc.osm   -d dcc  -U charles  -W charles
+
+dcc=> \dt
+--------+-------------------+-------+----------
+ public | osm_nodes         | table | charles
+ public | osm_relations     | table | charles
+ public | osm_way_classes   | table | charles
+ public | osm_way_types     | table | charles
+ public | relations_ways    | table | charles
+ public | spatial_ref_sys   | table | postgres
+ public | ways              | table | charles
+ public | ways_vertices_pgr | table | charles
+
+the real data is in "ways" and "ways_vertices_pgr"
+
+
+SELECT * FROM pgr_dijkstra('
+    SELECT gid AS id,
+         source,
+         target,
+         length AS cost
+        FROM ways',
+    170, 750, directed := false);
+
+#result: nodes and edges in a result table
+  routing ONLY uses the ways tables, not the vertices. 
+	INPUTS: It uses ways.source and ways.target, which are the row indices into vertex ?
+	OUTPUTS: indices into node(vertex?) and edge(ways?) tables
+
+*TO route with full edge info:
+SELECT * FROM ways, pgr_dijkstra('
+    SELECT gid AS id,
+         source,
+         target,
+         length AS cost
+        FROM ways',
+    170,750, directed := false)  where ways.gid=pgr_dijkstra.edge;
+
+
+
+*TO FIND NEAREST ROAD TO GPS POINT: (lonlat, unconventional)
+
+SELECT gid,name,ST_Distance(ways.the_geom,ST_SetSRID(ST_MakePoint(-1.4337, 53.2614),4326)) FROM ways ORDER BY 2 ASC LIMIT 1;
+
+
+
+
+dcc route counts to link flows:
+
+	we have 1 day of OD data
+
+	insert bluetooth sensor GPS locations to table - dataframe from shapefile DONE
+	insert route definitions to bew table DONE
+	insert route-counts to a new table DONE
+	make flow count table.  (gid, timestamp, window, counts)  DONE
+
+	each (route,timewindow) in route-counts:
+		get O,D blueooth sensor site GPS
+		find nearest O,D road links to sensor locations
+		find fastest route between them
+		each link on route (new link_counts table)
+			add a row of counts for this route (at time)
+
+	then
+		python, sql query to join links to their link_counts, plot thickness
+
+
+NOTES ON THE DATA STUCTURES
+	Shape file:
+		lines.shp - loaded by dcc_plot.py
+			geom
+			osm_id
+			row_np
+		points.shp
+
+	pgr conversion, in db
+		ways
+			gid 0-500 serial
+			source 0-500
+			target 0-500
+			osm_id
+			source_osm
+			target_osm	
+
+			the_geom (LINESTRING-wiggly?)
+			x1,x2,y1,y2
+			cost, distance, max_speed, one_way
+			
+		route result
+			edges  (0-500)
+			vertices (0-500)
+
+
+shp files may have roads not split into separate links -- so need to use the topology version to PLOT. topology version may have different osm ids; or one osm_id split into three topology links.
+so dont use raw shp to plot anything !
+
+
+
+
+
+
+
+IMPORT raw OSM to database (not routing)
+
+sudo apt-get install osm2pgsql
+osm2pgsql  -s -U charles -d dcc ~/data/osm/dcc.osm
+populates tables with names starting planet_osm_   (the pgrouting tables don't)

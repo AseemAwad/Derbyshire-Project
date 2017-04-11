@@ -1,0 +1,51 @@
+
+for NON-BLUETOOTH DATA: 
+main web page
+	site groups
+		DCC ALL PERM    
+			sites
+				000000000008 (click)
+					year of most recent data
+						select start date on calendar GUI
+						click monthly volume EXCEL image (not text)
+							this downloads an excel file:
+								1 hour bins
+								1 month data
+								2 directions
+
+for BLUETOOTH COUNTS (not MAC details):
+main web page
+	site groups
+		BLUE - CHESTERFIELD
+			sites
+				DCCJT_MAC000003923 (click)
+					year of most recent data
+						select start date on calendar
+
+
+						to download COUNT DATA:
+							click monthly volume EXCEL image (not text)
+								this downloads an excel file:
+									1 hour bins
+									1 month data
+									2 directions
+
+						to download per-vehicle detections (MAC IDs):
+							click "per-vehicle records"
+								(shows a data table in the browser)
+								open the blue menu icon in the top right
+								click the Excel file icon to download
+					
+
+To get site location:
+main web page
+	site groups
+		BLUE - CHESTERFIELD
+			sites
+				open blue menu icon in top right
+				click excel icon
+					this downloads OS grid coords of sites in one cluster.
+					the IDs like MAC000010107 correspond to routesID like 10107
+					locations are in Ordnance Survey numeric grid reference notation
+					eg. 428964, 360645 easting,northing (British National Grid projection)
+
